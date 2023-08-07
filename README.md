@@ -1,4 +1,4 @@
-#CNN Identification of dLGN Response to Natural Movies
+# CNN Identification of dLGN Response to Natural Movies
 
 Github repository for a master's thesis project in the lab of Philipp Berens.
 
