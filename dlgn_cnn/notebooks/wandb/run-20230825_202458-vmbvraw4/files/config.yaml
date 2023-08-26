@@ -1,0 +1,126 @@
+wandb_version: 1
+
+learning_rate:
+  desc: null
+  value: 0.005
+architecture:
+  desc: null
+  value: null
+dataset:
+  desc: null
+  value: null
+cur_epochs:
+  desc: null
+  value: 200
+starting epoch:
+  desc: null
+  value: 0
+lr_decay_steps:
+  desc: null
+  value: 10
+lr_decay_factor:
+  desc: null
+  value: 0.3
+min_lr:
+  desc: null
+  value: 0.0001
+_wandb:
+  desc: null
+  value:
+    python_version: 3.9.12
+    cli_version: 0.15.4
+    framework: torch
+    is_jupyter_run: true
+    is_kaggle_kernel: false
+    start_time: 1692987898.553916
+    t:
+      1:
+      - 1
+      - 41
+      - 55
+      2:
+      - 1
+      - 41
+      - 55
+      3:
+      - 7
+      - 16
+      - 19
+      - 23
+      4: 3.9.12
+      5: 0.15.4
+      8:
+      - 1
+      - 5
+    m:
+    - 1: Epoch
+      6:
+      - 2
+      - 3
+    - 1: Batch
+      6:
+      - 2
+      - 3
+input_datasets:
+  desc: null
+  value:
+  - Dataset: /gpfs01/berens/data/data/dLGN_hmov2/deeplake/dlgn_53x33/
+    Commit ID: null
+    Index:
+    - - 165
+      - 167
+      - 166
+      - 158
+      - 157
+      - 156
+      - 227
+      - 225
+      - 226
+      - 155
+      - 153
+      - 154
+      - 184
+      - 183
+      - 185
+      - 211
+      - 212
+      - 210
+      - 150
+      - 152
+      - 151
+      - 283
+      - 284
+      - 282
+      - 10
+      - 11
+      - 9
+      - 168
+      - 169
+      - 170
+      - 79
+      - 78
+      - 80
+      - 256
+      - 257
+      - 255
+      - 70
+      - 71
+      - 69
+      - 267
+      - 269
+      - 268
+      - 195
+      - 196
+      - 197
+      - 241
+      - 242
+      - 240
+      - 37
+      - 36
+      - 38
+      - 107
+      - 105
+      - 106
+      - 194
+      - 193
+      - 192

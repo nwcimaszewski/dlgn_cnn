@@ -1,0 +1,35 @@
+2023-08-25 20:24:58,486 INFO    MainThread:129199 [wandb_setup.py:_flush():76] Current SDK version is 0.15.4
+2023-08-25 20:24:58,487 INFO    MainThread:129199 [wandb_setup.py:_flush():76] Configure stats pid to 129199
+2023-08-25 20:24:58,487 INFO    MainThread:129199 [wandb_setup.py:_flush():76] Loading settings from /gpfs01/berens/user/ncimaszewski/.config/wandb/settings
+2023-08-25 20:24:58,487 INFO    MainThread:129199 [wandb_setup.py:_flush():76] Loading settings from /gpfs01/berens/user/ncimaszewski/my-docker-folder/ncimaszewski/dl_for_sensorium/dlgn_cnn/notebooks/wandb/settings
+2023-08-25 20:24:58,487 INFO    MainThread:129199 [wandb_setup.py:_flush():76] Loading settings from environment variables: {}
+2023-08-25 20:24:58,487 INFO    MainThread:129199 [wandb_setup.py:_flush():76] Applying setup settings: {'_disable_service': False}
+2023-08-25 20:24:58,487 INFO    MainThread:129199 [wandb_setup.py:_flush():76] Inferring run settings from compute environment: {'program': '<python with no main file>'}
+2023-08-25 20:24:58,488 INFO    MainThread:129199 [wandb_init.py:_log_setup():507] Logging user logs to /gpfs01/berens/user/ncimaszewski/my-docker-folder/ncimaszewski/dl_for_sensorium/dlgn_cnn/notebooks/wandb/run-20230825_202458-vmbvraw4/logs/debug.log
+2023-08-25 20:24:58,488 INFO    MainThread:129199 [wandb_init.py:_log_setup():508] Logging internal logs to /gpfs01/berens/user/ncimaszewski/my-docker-folder/ncimaszewski/dl_for_sensorium/dlgn_cnn/notebooks/wandb/run-20230825_202458-vmbvraw4/logs/debug-internal.log
+2023-08-25 20:24:58,488 INFO    MainThread:129199 [wandb_init.py:_jupyter_setup():453] configuring jupyter hooks <wandb.sdk.wandb_init._WandbInit object at 0x7f31cea90c70>
+2023-08-25 20:24:58,489 INFO    MainThread:129199 [wandb_init.py:init():547] calling init triggers
+2023-08-25 20:24:58,489 INFO    MainThread:129199 [wandb_init.py:init():554] wandb.init called with sweep_config: {}
+config: {'learning_rate': 0.005, 'architecture': None, 'dataset': None, 'cur_epochs': 200, 'starting epoch': 0, 'lr_decay_steps': 10, 'lr_decay_factor': 0.3, 'min_lr': 0.0001}
+2023-08-25 20:24:58,489 INFO    MainThread:129199 [wandb_init.py:init():596] starting backend
+2023-08-25 20:24:58,489 INFO    MainThread:129199 [wandb_init.py:init():600] setting up manager
+2023-08-25 20:24:58,496 INFO    MainThread:129199 [backend.py:_multiprocessing_setup():106] multiprocessing start_methods=fork,spawn,forkserver, using: spawn
+2023-08-25 20:24:58,553 INFO    MainThread:129199 [wandb_init.py:init():606] backend started and connected
+2023-08-25 20:24:58,573 INFO    MainThread:129199 [wandb_run.py:_label_probe_notebook():1235] probe notebook
+2023-08-25 20:24:58,573 INFO    MainThread:129199 [wandb_run.py:_label_probe_notebook():1245] Unable to probe notebook: 'NoneType' object has no attribute 'get'
+2023-08-25 20:24:58,573 INFO    MainThread:129199 [wandb_init.py:init():703] updated telemetry
+2023-08-25 20:24:58,866 INFO    MainThread:129199 [wandb_init.py:init():736] communicating run to backend with 60.0 second timeout
+2023-08-25 20:24:59,346 INFO    MainThread:129199 [wandb_run.py:_on_init():2176] communicating current version
+2023-08-25 20:24:59,421 INFO    MainThread:129199 [wandb_run.py:_on_init():2185] got version response upgrade_message: "wandb version 0.15.8 is available!  To upgrade, please run:\n $ pip install wandb --upgrade"
+
+2023-08-25 20:24:59,421 INFO    MainThread:129199 [wandb_init.py:init():787] starting run threads in backend
+2023-08-25 20:25:10,642 INFO    MainThread:129199 [wandb_run.py:_console_start():2155] atexit reg
+2023-08-25 20:25:10,642 INFO    MainThread:129199 [wandb_run.py:_redirect():2010] redirect: SettingsConsole.WRAP_RAW
+2023-08-25 20:25:10,642 INFO    MainThread:129199 [wandb_run.py:_redirect():2075] Wrapping output streams.
+2023-08-25 20:25:10,642 INFO    MainThread:129199 [wandb_run.py:_redirect():2100] Redirects installed.
+2023-08-25 20:25:10,643 INFO    MainThread:129199 [wandb_init.py:init():828] run started, returning control to user process
+2023-08-25 20:25:11,084 INFO    MainThread:129199 [wandb_config.py:__setitem__():152] config set input_datasets = [{'Dataset': '/gpfs01/berens/data/data/dLGN_hmov2/deeplake/dlgn_53x33/', 'Commit ID': None, 'Index': [[165, 167, 166, 158, 157, 156, 227, 225, 226, 155, 153, 154, 184, 183, 185, 211, 212, 210, 150, 152, 151, 283, 284, 282, 10, 11, 9, 168, 169, 170, 79, 78, 80, 256, 257, 255, 70, 71, 69, 267, 269, 268, 195, 196, 197, 241, 242, 240, 37, 36, 38, 107, 105, 106, 194, 193, 192]]}] - <bound method Run._config_callback of <wandb.sdk.wandb_run.Run object at 0x7f31cbec41c0>>
+2023-08-25 20:25:11,084 INFO    MainThread:129199 [wandb_run.py:_config_callback():1283] config_cb input_datasets [{'Dataset': '/gpfs01/berens/data/data/dLGN_hmov2/deeplake/dlgn_53x33/', 'Commit ID': None, 'Index': [[165, 167, 166, 158, 157, 156, 227, 225, 226, 155, 153, 154, 184, 183, 185, 211, 212, 210, 150, 152, 151, 283, 284, 282, 10, 11, 9, 168, 169, 170, 79, 78, 80, 256, 257, 255, 70, 71, 69, 267, 269, 268, 195, 196, 197, 241, 242, 240, 37, 36, 38, 107, 105, 106, 194, 193, 192]]}] None
+2023-08-25 20:25:12,007 INFO    MainThread:129199 [jupyter.py:save_ipynb():373] not saving jupyter notebook
+2023-08-25 20:25:12,008 INFO    MainThread:129199 [wandb_init.py:_pause_backend():418] pausing backend
+2023-08-25 20:26:46,327 INFO    MainThread:129199 [wandb_init.py:_resume_backend():423] resuming backend
