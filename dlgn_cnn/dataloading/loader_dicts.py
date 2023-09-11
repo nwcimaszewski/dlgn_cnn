@@ -20,29 +20,24 @@ from torchvision.transforms import Compose
 
 from .deeplake_transforms import *
 
+import ipdb 
+        
+
 def deeplake_loader_dict(
     paths,
     batch_size,
     preproc,
     train_val_split = [.80,.20],
-    use_api = False,
-    normalize = True,
-    exclude: str = None,
+    use_api = False, # option to download datasets directly from API
     cuda: bool = False,
-    max_frame=None,
-    frames=30, # default 30 frames, 1 sec at 30 Hz
-    offset=-1, # causes random offset from beginning of each sample
-    inputs_mean=None,
-    inputs_std=None,
     include_behavior=True,
     include_pupil_centers=True,
     include_optogenetics=False,
     include_pupil_centers_as_channels=False,
-    scale=1,
-    to_cut=True,
-    exclude_beh_channels=None,
     channels_last=False,
-    split_suffix=False, # whether 
+    tiered_datasets = False, # use this when there are separate deeplake datasets for training and validation data. otherwise each set will be split
+    tiers = ['train','val'],
+    tier_suffixes = None,
     user_token=None, # deeplake[enterprise] credentials, necessary for using optimized dataloaders
     org_id=None
 ):
@@ -53,11 +48,7 @@ def deeplake_loader_dict(
     Args:
         paths (list): list of paths for the deeplake datasets
         batch_size (int): batch size.
-        frames (int, optional): how many frames ot take per video
-        max_frame (int, optional): which is the maximal frame that could be taken per video
-        offset (int, optional): Offset to start the subsequence from. Defaults to -1, corresponding to random but valid offset at each iteration.
         cuda (bool, optional): whether to place the data on gpu or not.
-        normalize (bool, optional): whether to normalize the data (see also exclude)
         exclude (str, optional): data to exclude from data-normalization. Only relevant if normalize=True. Defaults to 'images'
         include_behavior (bool, optional): whether to include behavioral data
         include_pupil_centers (bool, optional): whether to include pupil center data
@@ -72,6 +63,7 @@ def deeplake_loader_dict(
     """
 
     # initialize data_keys
+
     data_keys = [
         "videos",
         "responses"
@@ -82,66 +74,38 @@ def deeplake_loader_dict(
         data_keys.append("pupil_center")
     if include_optogenetics:
         data_keys.append("opto")
+
     # our deeplake dataset must have tensors for each data_key
 
-    # hard coding this for now
-    # naming is just for consistency with Sensorium 2023
-    loaders_dict = {"oracle": {}, "train": {}}
+    loaders_dict = {}
+    for tier in tiers:
+        loaders_dict[tier] = {}
 
-    path_suffixes  = ['train','val'] # possible suffixes to local deeplake paths - created to accomodate downloaded V1 scans
-    loader_keys = loaders_dict.keys() # keys for loader dict used by training functions
+    if tiered_datasets and (tier_suffixes is None):
+        tier_suffixes = {tier: f'_{tier}' for tier in tiers} # possible suffixes to local deeplake paths - created to accomodate downloaded V1 scans
+    # loader_keys = loaders_dict.keys() # keys for loader dict used by training functions
     
     # V1 datasets provided for sensorium competition are already separated by train/val/test
     for path in paths: # for each provided dataset 
-        if use_api is True:
-            ds = deeplake.load(f'{path}',token=user_token, org_id=org_id)
-        else:
-            ds = deeplake.load(f'{path}',token=user_token, org_id=org_id)
-        
-        train_ds, val_ds = ds.random_split(train_val_split) # HARD CODING 80/20 split
-        # TODO: generalize this to more keys than just 'train' and 'val
-        # n = len(loaders_dict)
-        loaders_dict['train'][ path ] = train_ds.dataloader().transform(preproc(train_ds)).batch(batch_size).pytorch() 
-        loaders_dict['oracle'][ path ] = val_ds.dataloader().transform(preproc(val_ds)).batch(batch_size).pytorch() 
-            
-        # TODO: generalize function to sinzlab formatted V1 scans
-        # difference is that pathnames of deeplake datasets have "_train", "_val", "_test" as suffixes
-        
-        return loaders_dict
-        
-        # if split_suffix: # if suffix is there...
-        #     ds = deeplake.load(f'{path}_{suffix}',token=user_token, org_id=org_id)
+        # if use_api is True:
+        #     ds = deeplake.load(f'{path}',token=user_token, org_id=org_id)
         # else:
         #     ds = deeplake.load(f'{path}',token=user_token, org_id=org_id)
-        #     train_ds, val_ds = ds.random_split([0.8, 0.2])
-            
-        # for i, suffix in enumerate(path_suffixes):
-        #     if use_api is True: # download dataset directly from the Deeplake API
-                # ds = deeplake.load(f'hub://sinzlab/sensorium2023_{path}_{suffix}',read_only=True) # maybe fix this so paths can be passed in in a more forgiving format
-                # this bypasses the standard FileTreeHierarchy/TransformDataset classes from neural.predictors.data.datasets
-                # dat2 = TransformDatasetFromDeeplake(ds,*data_keys)
-                # instead local Deeplake datasets can be created using deeplake_tutorial.ipynb
-                # we want the dataloader to return a tuple with response, stimulus, pupil fixation, 
-                # use built-in deeplake pytorch dataloader method instead
-                # docs here: https://docs.deeplake.ai/en/latest/deeplake.core.dataset.html#deeplake.core.dataset.Dataset.pytorch
+        ds = deeplake.load(f'{path}',token=user_token, org_id=org_id)
+        if tiered_datasets:
+            for tier, suffix in tier_suffixes.items():
+                if path.endswith(suffix):
+                    readout_key = path[:-len(suffix)]
+                    # loader = ds.dataloader().batch(batch_size).pytorch().transform(preproc(ds))
+                    loaders_dict[tier][ readout_key ] = ds.dataloader().batch(batch_size).pytorch().transform(preproc(ds))
+                    # ipdb.set_trace()
                 
-            
-            # ds.pytorch(tensors=tuple(data_keys), pin_memory=True, # not sure whether to pin memory or not
-            #         num_workers=0,
-            #         batch_size=batch_size,
-            #         transform=partial(norm_and_cut, 
-            #                           dataset_statistic=ds.info.statistics, frames=frames, data_keys = data_keys, channels_last=channels_last), # transform is the function norm_and_cut with following params input
-            #         shuffle=True)
-
-
-
-# class Preprocess(Transform):
-#     # a class that will take in transforms for each data tensor, then compile them somehow?  and will be passed to the pytorch dataloader 
-#     # i can call it a CompositeTransform maybe
-    
-#     def __init__(self,transforms):
-#         # let transforms be a dict with keys equal to data_keys
-#         # e.g. transforms = {'videos': some_transform,'responses': some_transform, }
-
-#     def __call__(self):
+        else:
+            ds = deeplake.load(f'{path}',token=user_token, org_id=org_id)
+            train_ds, val_ds = ds.random_split(train_val_split)
+            loaders_dict['train'][ path ] = train_ds.dataloader().transform(preproc(train_ds)).batch(batch_size).pytorch() 
+            loaders_dict['val'][ path ] = val_ds.dataloader().transform(preproc(val_ds)).batch(batch_size).pytorch() 
+            ipdb.set_trace()
+        # TODO: generalize this to more keys than just 'train' and 'val
         
+    return loaders_dict

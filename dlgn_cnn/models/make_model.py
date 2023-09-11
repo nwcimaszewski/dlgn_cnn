@@ -12,9 +12,10 @@ from nnfabrik.utility.nn_helpers import set_random_seed
 from torch import nn
 
 from .readouts import MultipleFullFactorized2d, MultipleFullGaussian2d
-from .utility import get_dims_for_loader_dict, prepare_grid
+from .utils import get_dims_for_loader_dict, prepare_grid
 from .video_encoder import VideoFiringRateEncoder
 
+import ipdb
 
 def make_video_model(
     dataloaders,
@@ -23,11 +24,14 @@ def make_video_model(
     core_type,
     readout_dict,
     readout_type,
-    use_gru,
-    gru_dict,
-    use_shifter,
-    shifter_dict,
-    shifter_type,
+    in_name='videos',
+    out_name='responses',
+    opto_key = 'opto',
+    use_gru = False,
+    gru_dict = None,
+    use_shifter = False,
+    shifter_dict = None,
+    shifter_type = 'MLP',
     elu_offset=0.0,
     nonlinearity_type="elu",
     nonlinearity_config=None,
@@ -60,10 +64,13 @@ def make_video_model(
         dataloaders = dataloaders["train"]
 
     # Obtain the named tuple fields from the first entry of the first dataloader in the dictionary
-    batch = next(iter(list(dataloaders.values())[0]))
-    in_name, out_name = (
-        list(batch.keys())[:2] if isinstance(batch, dict) else batch._fields[:2] # batch is a dict, consistent with deeplake torch loaders
-    )
+    
+    batch = next(iter( list(dataloaders.values())[0] )) # should be iterable ordered dict
+    # in_name, out_name = (
+    #     list(batch.keys())[:2] if isinstance(batch, dict) else batch._fields[:2] # batch is a dict, consistent with deeplake torch loaders
+    # ) 
+    
+    # ipdb.set_trace()
 
     session_shape_dict = get_dims_for_loader_dict(dataloaders, from_deeplake) # 
     n_neurons_dict = {k: v[out_name][1] for k, v in session_shape_dict.items()}
@@ -92,19 +99,20 @@ def make_video_model(
             )
         else:
             core_dict["input_kernel"] = (
-                core_dict["num_frames"],
+                core_dict["num_frames_in"],
                 core_dict["input_kernel"],
                 core_dict["input_kernel"],
             )
 
         core_dict["hidden_kernel"] = (
-            core_dict["num_frames"],
+            core_dict["num_frames_hidden"],
             core_dict["hidden_kernel"],
             core_dict["hidden_kernel"],
         )
 
         del core_dict["num_frames"]
         del core_dict["spatial_input_kernel"]
+        
         core = Basic3dCore(**core_dict)
     else:
         raise NotImplementedError(f"core type {core_type} is not implemented")

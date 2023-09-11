@@ -4,30 +4,27 @@ import numpy as np
 import torch
 from neuralpredictors.measures.np_functions import corr
 from neuralpredictors.training import device_state
+import ipdb
 
 
+# local: predict 
 def model_predictions(
-    model, dataloader, data_key, device="cpu", skip=50, deeplake_ds=False
+    model, dataloader, data_key, device="cpu", skip=0, from_deeplake=False, in_name = 'videos', out_name = 'videos'
 ):
     """
     computes model predictions for a given dataloader and a model
     Returns:
-        target: ground truth, i.e. neuronal firing rates of the neurons
-        output: responses as predicted by the network
+        target: list of batches of true responses, i.e. (b, n, t) shape arrays
+        output: list of batches of true responses, i.e. (b, n, t) shape arrays
+
     """
     
     target, output = [], []
-    for batch in dataloader:
-
-        batch_kwargs = batch._asdict() if not isinstance(batch, dict) else batch
-        if deeplake_ds:
-            for k in batch_kwargs.keys():
-                if k not in ["id", "index"]:
-                    batch_kwargs[k] = torch.Tensor(np.asarray(batch_kwargs[k])).to(
-                        device
-                    )
-            images = batch_kwargs["videos"]
-            responses = batch_kwargs["responses"]
+    for batch in dataloader: # for one batch
+        batch_dict = batch._asdict() if not isinstance(batch, dict) else batch
+        if from_deeplake:
+            images = batch_dict[in_name] # take videos from batch (b,c,t,x,y)
+            responses = batch_dict[out_name] # (b,n,t)
         else:
             images, responses = (
                 batch[:2]
@@ -35,25 +32,20 @@ def model_predictions(
                 else (batch["videos"], batch["responses"])
             )
         # print('scores.model_predictions')
-
         with torch.no_grad():
-            resp = responses.detach().cpu()[:, :, skip:]
-            target = target + list(resp)
-            # print('device argument is', device)
-            # print(torch.device(device))
-            with device_state(model, device):
-                # print(batch_kwargs.keys()) # where is shifter being passed in as true?  where is the best place to pass those inputs onto the GPU?
-                # for k in batch_kwargs.keys():
-                    # print(k, ':', batch_kwargs[k].device)
+            resp = responses.detach().cpu()[:, :, skip:] # truncate "skip" many frames - (b, n, t2)
+            target = target + list(resp) # append to list of all response batches
+            with device_state(model, device): 
                 out = (
-                    model(images.to(device), data_key=data_key, **batch_kwargs)
+                    model(images.to(device), data_key=data_key, **batch_dict) # (b,n,t)
                     .detach()
-                    .cpu()[:, -resp.shape[-1] :, :]
+                    .cpu()[:, -resp.shape[-1] :, :] # (b,t,n,?)
                 )
                 assert (
                     out.shape[1] == resp.shape[-1]
-                ), f"model prediction is too short ({out.shape[1]} vs {resp.shape[-1]})"
-                output = output + list(out.permute(0, 2, 1))
+                ), f"model prediction is too short ({out.shape[1]} vs {resp.shape[-1]})" 
+                # ipdb.set_trace()
+                output = output + list(out.permute(0, 2, 1)) # append to list of all output batches
 
     return target, output
 
@@ -63,10 +55,9 @@ def get_correlations(
     dataloaders,
     tier=None,
     device="cpu",
-    as_dict=False,
-    per_neuron=True,
     from_deeplake=False,
-    skip = 0,
+    skip=0,
+    scalar=False,
     **kwargs,
 ):
     """
@@ -82,36 +73,39 @@ def get_correlations(
         dict or np.ndarray: contains the correlation values.
     """
     correlations = {}
-    dl = dataloaders[tier] if tier is not None else dataloaders
+    dataloaders = dataloaders[tier] if tier is not None else dataloaders # if a dict of dataloaders, or a dict of dicts of (dataloaders)
     # print(device, 'score.get_correlations')
-    for k, v in dl.items(): 
-        target, output = model_predictions(
+    for k, v in dataloaders.items(): # for individual loaders
+        target, output = model_predictions( # list of batchwise response tensor
             dataloader=v,
             model=model,
-            data_key=k,
+            data_key=k, # key used to index model readouts
             device=device,
             from_deeplake=from_deeplake,
             skip=skip
         )
-        target = np.concatenate(target, axis=1).T
-        output = np.concatenate(output, axis=1).T
-        correlations[k] = corr(target, output, axis=0)
+
+        # correlations = [] # list of correlations across all neurons across datasets 
+
+        target = np.concatenate(target, axis=1).T  # flattens across time and batch, so for 57 test scenes
+        output = np.concatenate(output, axis=1).T  # transpose to (frames, neurons) shape
+        correlations[k] = corr(target, output, axis=0) # compute between responses over frames
+
+        # ipdb.set_trace()
 
         if np.any(np.isnan(correlations[k])):
             warnings.warn(
-                "{}% NaNs , NaNs will be set to Zero.".format(
+                "{}% NaN correlations computed , NaNs will be set to Zero.".format(
                     np.isnan(correlations[k]).mean() * 100
                 )
             )
         correlations[k][np.isnan(correlations[k])] = 0
-
-    if not as_dict:
-        correlations = (
-            np.hstack([v for v in correlations.values()])
-            if per_neuron
-            else np.mean(np.hstack([v for v in correlations.values()]))
-        )
-    return correlations
+    composite_correlations = np.hstack([val for val in correlations.values()]) # as single np array
+    
+    if scalar:
+        return composite_correlations.mean()
+    else:
+       return composite_correlations, correlations # return in both array and dict format
 
 
 def get_poisson_loss(
@@ -130,6 +124,10 @@ def get_poisson_loss(
         )
         loss = output - target * np.log(output + eps) # ( predicted number of spikes ) minus ( true number of spikes times log of predicted number )
         poisson_loss[k] = np.mean(loss, axis=0) if avg else np.sum(loss, axis=0)
+    ipdb.set_trace()
+
+    nothing=[]
+
     if as_dict:
         return poisson_loss
     else:
