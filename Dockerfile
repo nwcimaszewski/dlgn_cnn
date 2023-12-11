@@ -81,15 +81,24 @@ RUN set -x \
     && chmod +x /usr/local/bin/gosu \
     && gosu nobody true
 
+<<<<<<< HEAD
 COPY dl_for_sensorium/entrypoint.sh /usr/local/bin/
+=======
+COPY dlgn_cnn/docker_scripts/entrypoint.sh /usr/local/bin/
+>>>>>>> remotes/origin/main
 RUN chmod a+x /usr/local/bin/entrypoint.sh
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 RUN mkdir /usr/.jupyter
 ENV JUPYTER_CONFIG_DIR /usr/.jupyter
+<<<<<<< HEAD
 COPY dl_for_sensorium/jupyter_notebook_config.py /usr/.jupyter/
 COPY dl_for_sensorium/jupyter_server_config.py /usr/.jupyter/
+=======
+COPY dlgn_cnn/docker_scripts/jupyter_notebook_config.py /usr/.jupyter/
+COPY dlgn_cnn/docker_scripts/jupyter_server_config.py /usr/.jupyter/
+>>>>>>> remotes/origin/main
 
 RUN pip install --upgrade pip
 RUN pip --no-cache-dir install \
@@ -164,7 +173,11 @@ RUN python -m pip install git+https://github.com/sinzlab/nnfabrik
 # RUN python -m pip install git+https://github.com/sinzlab/sensorium
 
 # this I can probably also clone inside the image but I am just copying the local repo for now
+<<<<<<< HEAD
 COPY dl_for_sensorium/sensorium_2023/ /sensorium_2023
+=======
+COPY dlgn_cnn/docker_scripts/docker_scripts/sensorium_2023/ /sensorium_2023
+>>>>>>> remotes/origin/main
 RUN pip install -e /sensorium_2023 
 
 RUN pip --no-cache-dir install scikit-image
@@ -172,7 +185,11 @@ RUN pip --no-cache-dir install scikit-image
 # Jupyter has issues with being run directly:
 #   https://github.com/ipython/ipython/issues/7062
 # We just add a little wrapper script. #
+<<<<<<< HEAD
 COPY dl_for_sensorium/run_jupyterlab.sh /usr/local/bin
+=======
+COPY dlgn_cnn/docker_scripts/run_jupyterlab.sh /usr/local/bin
+>>>>>>> remotes/origin/main
 RUN chmod -R a+rwx /usr/.jupyter \
     && chmod +rx /usr/local/bin/run_jupyterlab.sh
 
